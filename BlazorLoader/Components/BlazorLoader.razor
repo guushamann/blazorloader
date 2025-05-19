@@ -1,0 +1,63 @@
+@inject DataChangeNotifier Notifier
+
+<div class="blazor-loader">
+    @if (QueryState == null)
+    {
+        <div class="loader-state not-started">
+            <p>Not started</p>
+        </div>
+    }
+    else
+    {
+        switch (QueryState.State)
+        {
+            case RequestState.Loading:
+                <div class="loader-state loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading...</p>
+                </div>
+                break;
+
+            case RequestState.Done:
+                if (QueryState.HasError)
+                {
+                    <div class="loader-state error">
+                        <div class="alert alert-danger" role="alert">
+                            <h4 class="alert-heading">Error</h4>
+                            <p>@QueryState.Error?.Message</p>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="loader-state success">
+                        @ChildContent
+                    </div>
+                }
+                break;
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public required BlazorQueryState QueryState { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string QueryKey { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        Notifier.Subscribe(QueryKey, StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        // Optionally implement unsubscription logic if needed
+    }
+}
